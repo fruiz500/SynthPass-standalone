@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" appcache="synthpass.appcache">
+<title>SynthPass</title>
+<meta name="author" content="F. Ruiz">
+<meta name="robots" content="index">
+<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="images/icon128.png">
+<link rel="shortcut icon" type="image/x-icon" href="images/icon16.png">
+<link href="style.css" rel="stylesheet">
+
+
+<!--License notice and SSL force-->
+<script src="lib/license.js"></script>
+    
+<!--this only loads two regular expressions: blackListExp and wordListExp, plus their lengths-->
+<script src="lib/dictionary_en.js"></script>
+
+<!--Tweet NaCl crypto library by Dmitry Chestnykh. https://github.com/dchest/tweetnacl-js-->
+<script src="lib-opensrc/nacl.js"></script>
+
+<!--scrypt-async-js KDF by Dmitry Chestnykh. https://github.com/dchest/scrypt-async-js-->
+<script src="lib-opensrc/scrypt-async.js"></script>
+</head>
+
+<body>
+<h3 id="helpHeading">SynthPass Online</h3>
+<div id="explanation">
+	<em>click here for explanation</em>
+</div>
+<p id="helpMsg" title="password strength appears here as you type, along with a mnemonic word">Fill the fields in yellow and click OK</p>
+<p>Website name (case insensitive)
+  <input type="text" class="cssbox" id="siteName" title="domain name in *.* format" placeholder="name.suffix"/>
+  Length, special characters
+  <input type="text" class="cssbox" id="pwdLength" title="password length (default 44); write 'pin' for numeric, 'al' for alphanumeric; special characters allowed" placeholder="password length and type; special characters"/>
+  Master Password
+  <input type="password" class="cssbox" id="masterPwd" title="type Master Password here" placeholder="Password here"/><img id='showPwdMode' class="field-icon" src="images/eye-24.png" title="click this to see/hide Hashili and Password">
+  Serial
+  <input type="text" class="cssbox" id="serial" title="add optional serial"/>
+  Output
+</p>
+<div class="cssbox" id="outputBox" contenteditable="true" title="edit as needed"></div>
+<br>
+<button class="cssbutton" id="okBtn" value="OK" title="OK">OK</button>
+&nbsp;&nbsp;&nbsp;<button class="cssbutton" id="copyBtn" value="copy" title="copy to clipboard and erase from here">Copy</button>
+
+<!--functions for opening and closing help items, plus password synthesis in last item-->
+<script src="lib/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+html {
+	-webkit-text-size-adjust: 100%;
+}
+body {
+	font-family: Sans-Serif;
+	overflow: auto;
+	background-color: #fcfcfc;
+	color: #000000;
+	border: none;
+	max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 90%;
+}
+.cssbutton {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	font-family: Arial;
+	font-size: 18px;
+	padding: 10px;
+	text-decoration: none;
+	color: #666666;
+	background: #e6e6e6;
+}
+.cssbutton:hover {
+	text-decoration: none;
+	cursor: pointer;
+	background: #c4c4c4;
+}
+.cssbox {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 6px;
+	font-size: medium;
+	text-decoration: none;
+	width: 100%;
+	-webkit-appearance: none;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+	color: #000000;
+	background: #fffff5;
+	border: 1px solid #999999;
+	overflow: auto;
+	padding: 0px;
+	padding-left: 6px;
+}
+.field-icon {
+  margin-left: -24px;
+  height: 16px;
+  z-index: 2;
+}
+.blink {
+	-webkit-animation: blink .75s linear infinite;
+	-moz-animation: blink .75s linear infinite;
+	-ms-animation: blink .75s linear infinite;
+	-o-animation: blink .75s linear infinite;
+	animation: blink .75s linear infinite;
+	color: blue;
+}
+ @-webkit-keyframes blink {
+ 0% {
+opacity: 1;
+}
+ 50% {
+opacity: 1;
+}
+ 50.01% {
+opacity: 0;
+}
+ 100% {
+opacity: 0;
+}
+}
+ @-moz-keyframes blink {
+ 0% {
+opacity: 1;
+}
+ 50% {
+opacity: 1;
+}
+ 50.01% {
+opacity: 0;
+}
+ 100% {
+opacity: 0;
+}
+}
+ @-ms-keyframes blink {
+ 0% {
+opacity: 1;
+}
+ 50% {
+opacity: 1;
+}
+ 50.01% {
+opacity: 0;
+}
+ 100% {
+opacity: 0;
+}
+}
+ @-o-keyframes blink {
+ 0% {
+opacity: 1;
+}
+ 50% {
+opacity: 1;
+}
+ 50.01% {
+opacity: 0;
+}
+ 100% {
+opacity: 0;
+}
+}
+ @keyframes blink {
+ 0% {
+opacity: 1;
+}
+ 50% {
+opacity: 1;
+}
+ 50.01% {
+opacity: 0;
+}
+ 100% {
+opacity: 0;
+}
+}
+
+#outputBox {
+	padding: 10px;
+	height: 40px;
+	background: #f0fffb
+}
+#helpCheckCell {
+	text-align: center;
+}
+#siteName {
+	text-align: center;
+}

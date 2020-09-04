@@ -1,0 +1,12 @@
+CACHE MANIFEST 
+# last edited for v0.1.6
+style.css
+images/icon16.png
+images/icon128.png
+images/eye-24.png
+images/hide-24.png
+lib/license.js
+lib/dictionary_en.js
+lib/mobile.js
+lib-opensrc/nacl.js
+lib-opensrc/scrypt-async.js
