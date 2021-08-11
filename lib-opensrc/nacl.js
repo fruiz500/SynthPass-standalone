@@ -1,4 +1,4 @@
-﻿(function(nacl) {
+(function(nacl) {
 'use strict';
 
 // Ported in 2014 by Dmitry Chestnykh and Devi Mandiri.
@@ -727,7 +727,7 @@ function modL(r, x) {
     carry = 0;
     for (j = i - 32, k = i - 12; j < k; ++j) {
       x[j] += carry - 16 * x[i] * L[j - (i - 32)];
-      carry = (x[j] + 128) >> 8;
+      carry = Math.floor((x[j] + 128) / 256);
       x[j] -= carry * 256;
     }
     x[j] += carry;
@@ -828,12 +828,11 @@ function unpackneg(r, p) {
 }
 
 function crypto_sign_open(m, sm, n, pk) {
-  var i, mlen;
+  var i;
   var t = new Uint8Array(32), h = new Uint8Array(64);
   var p = [gf(), gf(), gf(), gf()],
       q = [gf(), gf(), gf(), gf()];
 
-  mlen = -1;
   if (n < 64) return -1;
 
   if (unpackneg(q, pk)) return -1;
@@ -855,8 +854,7 @@ function crypto_sign_open(m, sm, n, pk) {
   }
 
   for (i = 0; i < n; i++) m[i] = sm[i + 64];
-  mlen = n;
-  return mlen;
+  return n;
 }
 
 var crypto_secretbox_KEYBYTES = 32,
@@ -917,7 +915,23 @@ nacl.lowlevel = {
   crypto_sign_PUBLICKEYBYTES: crypto_sign_PUBLICKEYBYTES,
   crypto_sign_SECRETKEYBYTES: crypto_sign_SECRETKEYBYTES,
   crypto_sign_SEEDBYTES: crypto_sign_SEEDBYTES,
-  crypto_hash_BYTES: crypto_hash_BYTES
+  crypto_hash_BYTES: crypto_hash_BYTES,
+
+  gf: gf,
+  D: D,
+  L: L,
+  pack25519: pack25519,
+  unpack25519: unpack25519,
+  M: M,
+  A: A,
+  S: S,
+  Z: Z,
+  pow2523: pow2523,
+  add: add,
+  set25519: set25519,
+  modL: modL,
+  scalarmult: scalarmult,
+  scalarbase: scalarbase,
 };
 
 /* High-level API */
@@ -933,50 +947,15 @@ function checkBoxLengths(pk, sk) {
 }
 
 function checkArrayTypes() {
-  var t, i;
-  for (i = 0; i < arguments.length; i++) {
-     if ((t = Object.prototype.toString.call(arguments[i])) !== '[object Uint8Array]')
-       throw new TypeError('unexpected type ' + t + ', use Uint8Array');
+  for (var i = 0; i < arguments.length; i++) {
+    if (!(arguments[i] instanceof Uint8Array))
+      throw new TypeError('unexpected type, use Uint8Array');
   }
 }
 
 function cleanup(arr) {
   for (var i = 0; i < arr.length; i++) arr[i] = 0;
 }
-
-nacl.util = {};
-
-nacl.util.decodeUTF8 = function(s) {
-  var i, d = unescape(encodeURIComponent(s)), b = new Uint8Array(d.length);
-  for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
-  return b;
-};
-
-nacl.util.encodeUTF8 = function(arr) {
-  var i, s = [];
-  for (i = 0; i < arr.length; i++) s.push(String.fromCharCode(arr[i]));
-  return decodeURIComponent(escape(s.join('')));
-};
-
-nacl.util.encodeBase64 = function(arr) {
-  if (typeof btoa === 'undefined') {
-    return (new Buffer(arr)).toString('base64');
-  } else {
-    var i, s = [], len = arr.length;
-    for (i = 0; i < len; i++) s.push(String.fromCharCode(arr[i]));
-    return btoa(s.join(''));
-  }
-};
-
-nacl.util.decodeBase64 = function(s) {
-  if (typeof atob === 'undefined') {
-    return new Uint8Array(Array.prototype.slice.call(new Buffer(s, 'base64'), 0));
-  } else {
-    var i, d = atob(s), b = new Uint8Array(d.length);
-    for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
-    return b;
-  }
-};
 
 nacl.randomBytes = function(n) {
   var b = new Uint8Array(n);
@@ -1000,8 +979,8 @@ nacl.secretbox.open = function(box, nonce, key) {
   var c = new Uint8Array(crypto_secretbox_BOXZEROBYTES + box.length);
   var m = new Uint8Array(c.length);
   for (var i = 0; i < box.length; i++) c[i+crypto_secretbox_BOXZEROBYTES] = box[i];
-  if (c.length < 32) return false;
-  if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0) return false;
+  if (c.length < 32) return null;
+  if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0) return null;
   return m.subarray(crypto_secretbox_ZEROBYTES);
 };
 
@@ -1083,8 +1062,6 @@ nacl.sign = function(msg, secretKey) {
 };
 
 nacl.sign.open = function(signedMsg, publicKey) {
-  if (arguments.length !== 2)
-    throw new Error('nacl.sign.open accepts 2 arguments; did you mean to use nacl.sign.detached.verify?');
   checkArrayTypes(signedMsg, publicKey);
   if (publicKey.length !== crypto_sign_PUBLICKEYBYTES)
     throw new Error('bad public key size');
@@ -1173,26 +1150,22 @@ nacl.setPRNG = function(fn) {
 (function() {
   // Initialize PRNG if environment provides CSPRNG.
   // If not, methods calling randombytes will throw.
-  var crypto;
-  if (typeof window !== 'undefined') {
-    // Browser.
-    if (window.crypto && window.crypto.getRandomValues) {
-      crypto = window.crypto; // Standard
-    } else if (window.msCrypto && window.msCrypto.getRandomValues) {
-      crypto = window.msCrypto; // Internet Explorer 11+
-    }
-    if (crypto) {
-      nacl.setPRNG(function(x, n) {
-        var i, v = new Uint8Array(n);
-        crypto.getRandomValues(v);
-        for (i = 0; i < n; i++) x[i] = v[i];
-        cleanup(v);
-      });
-    }
+  var crypto = typeof self !== 'undefined' ? (self.crypto || self.msCrypto) : null;
+  if (crypto && crypto.getRandomValues) {
+    // Browsers.
+    var QUOTA = 65536;
+    nacl.setPRNG(function(x, n) {
+      var i, v = new Uint8Array(n);
+      for (i = 0; i < n; i += QUOTA) {
+        crypto.getRandomValues(v.subarray(i, i + Math.min(n - i, QUOTA)));
+      }
+      for (i = 0; i < n; i++) x[i] = v[i];
+      cleanup(v);
+    });
   } else if (typeof require !== 'undefined') {
     // Node.js.
     crypto = require('crypto');
-    if (crypto) {
+    if (crypto && crypto.randomBytes) {
       nacl.setPRNG(function(x, n) {
         var i, v = crypto.randomBytes(n);
         for (i = 0; i < n; i++) x[i] = v[i];
@@ -1202,4 +1175,4 @@ nacl.setPRNG = function(fn) {
   }
 })();
 
-})(typeof module !== 'undefined' && module.exports ? module.exports : (window.nacl = window.nacl || {}));
+})(typeof module !== 'undefined' && module.exports ? module.exports : (self.nacl = self.nacl || {}));
